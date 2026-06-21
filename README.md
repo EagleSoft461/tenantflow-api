@@ -1,3 +1,8 @@
+[![GitHub Release](https://img.shields.io/badge/Release-v0.2.0-green.svg)](https://github.com/your-github-username/tenantflow-api/releases)
+[![Java Version](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.2-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Docker](https://img.shields.io/badge/Docker-Containerized-blue.svg)](https://www.docker.com/)
+
 # TenantFlow - Distributed Multi-Tenant B2B SaaS Infrastructure
 
 TenantFlow is an enterprise-grade, high-performance **B2B SaaS (Software as a Service)** backend infrastructure designed around a **Single-Database, Discriminator-Based (Shared Schema)** multi-tenancy model.
