@@ -1,15 +1,12 @@
 package org.example.controller;
 
 import org.example.entity.User;
-import org.example.service.UserService;
+import org.example.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.util.List;
 
 @RestController
@@ -17,18 +14,22 @@ import java.util.List;
 public class TestController {
 
     @Autowired
-    private UserService userService;
+    private UserRepository userRepository;
 
-    // Aktif dükkana kullanıcı ekleme endpoint'i
-    @PostMapping("/users")
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        User savedUser = userService.createUser(user);
-        return ResponseEntity.ok(savedUser);
-    }
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-    // Sadece aktif dükkanın kullanıcılarını getirme endpoint'i
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getUsers() {
-        return ResponseEntity.ok(userService.getAllUsersByActiveTenant());
+    public List<User> getUsers() {
+        // HİLELİ DOKUNUŞ: Mehmet'i bul ve şifresini orijinal Java BCrypt ile ez!
+        userRepository.findAll().stream()
+                .filter(u -> u.getEmail().equals("mehmet@berberali.com"))
+                .findFirst()
+                .ifPresent(user -> {
+                    user.setPassword(passwordEncoder.encode("123"));
+                    userRepository.save(user);
+                });
+
+        return userRepository.findAll();
     }
 }
