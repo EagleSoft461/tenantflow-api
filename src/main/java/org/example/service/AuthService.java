@@ -20,20 +20,8 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // Metodun parantez içine (LoginRequest request) parametresini tam olarak oturttuk:
+    // 1. LOGIN ENDPOINT'İ
     public AuthResponse login(LoginRequest request) {
-
-        if ("mehmet@berberali.com".equals(request.getEmail())) {
-            User testUser = userRepository.findAll().stream()
-                    .filter(u -> u.getEmail().equals(request.getEmail()))
-                    .findFirst()
-                    .orElse(null);
-            if (testUser != null) {
-                testUser.setPassword(passwordEncoder.encode("123"));
-                userRepository.save(testUser);
-            }
-        }
-
         // Veritabanında kullanıcıyı e-postasına göre arıyoruz
         User user = userRepository.findAll().stream()
                 .filter(u -> u.getEmail().equals(request.getEmail()))
@@ -45,8 +33,27 @@ public class AuthService {
             throw new RuntimeException("Hata: Şifre hatalı!");
         }
 
-        // Kullanıcı doğrulandı! Şimdi ona ait tenantId'yi de barındıran JWT üretiyoruz
+        // Kullanıcı doğrulandı, JWT token üretiliyor
         String token = jwtService.generateToken(user);
+        return new AuthResponse(token);
+    }
+
+    // 2. REGISTER ENDPOINT'İ
+    public AuthResponse register(User user) {
+        // Kullanıcı e-postası zaten var mı kontrolü
+        boolean exists = userRepository.findAll().stream()
+                .anyMatch(u -> u.getEmail().equals(user.getEmail()));
+
+        if (exists) {
+            throw new RuntimeException("Hata: Bu e-posta adresi zaten kullanımda!");
+        }
+
+        // Şifreyi veritabanına gitmeden önce BCrypt ile mühürlüyoruz
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        User savedUser = userRepository.save(user);
+
+        String token = jwtService.generateToken(savedUser);
         return new AuthResponse(token);
     }
 }
