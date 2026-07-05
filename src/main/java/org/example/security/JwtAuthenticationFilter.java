@@ -8,12 +8,16 @@ import org.example.context.TenantContext;
 import org.example.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.Claims;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -26,48 +30,70 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        // 1. İstekteki "Authorization" başlığını (Header) oku
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String userEmail;
 
-        // 2. Eğer token yoksa veya "Bearer " ile başlamıyorsa filtreyi geç, dokunma
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 3. "Bearer " kısmını sıyırıp sadece saf şifreli token'ı al
         jwt = authHeader.substring(7);
 
         try {
             userEmail = jwtService.extractEmail(jwt);
 
-            // 4. Eğer email başarıyla çözüldüyse ve Spring Security henüz bu isteği onaylamadıysa
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 if (jwtService.isTokenValid(jwt, userEmail)) {
-                    // EN KRİTİK YER: Token'ın içinden tenantId'yi sök ve ThreadLocal kutusuna bas!
+                    // 1. Kiracı ID'sini bağlama yerleştir
                     String tenantId = jwtService.extractTenantId(jwt);
                     TenantContext.setCurrentTenant(tenantId);
 
-                    // Spring Security'ye "Bu kullanıcı güvenlidir, içeri alabilirsin" raporu veriyoruz
+                    // 2. DOĞRUDAN CLAIMS ÜZERİNDEN ROL ÇEKME (JwtService'e bağımlılığı bitirdik):
+                    String role = null;
+                    try {
+                        // Token'ın imzasını doğrulamayı zaten JwtService yaptığı için
+                        // buradaki şifreli gövdeden (payload) "role" claim'ini cımbızla çekiyoruz.
+                        String[] chunks = jwt.split("\\.");
+                        if (chunks.length > 1) {
+                            String payload = new String(java.util.Base64.getUrlDecoder().decode(chunks[1]));
+                            // Basit bir JSON string temizleme ile "role":"..." değerini yakalayalım
+                            if (payload.contains("\"role\":\"")) {
+                                role = payload.split("\"role\":\"")[1].split("\"")[0];
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Payload okuma hatası: " + e.getMessage());
+                    }
+
+                    // Eğer rol bulunamadıysa patlamasın, varsayılan STAFF olsun
+                    if (role == null || role.trim().isEmpty()) {
+                        role = "ROLE_STAFF";
+                    }
+
+                    // Rol "ROLE_" ile başlamıyorsa Spring formatına uyduruyoruz
+                    if (!role.startsWith("ROLE_")) {
+                        role = "ROLE_" + role.toUpperCase();
+                    }
+
+                    List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
+
+                    // 3. Spring Security'yi rollerle besle!
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userEmail, null, Collections.emptyList()
+                            userEmail, null, authorities
                     );
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
         } catch (Exception e) {
-            // Token sahteyse veya süresi dolduysa sistemi patlatma, hata logu bas
             System.out.println("JWT Doğrulama Hatası: " + e.getMessage());
         }
 
         try {
-            // 5. İstek yoluna devam etsin (Controller'a ulaşsın)
             filterChain.doFilter(request, response);
         } finally {
-            // 6. İstek bittiğinde (Response dönerken) ThreadLocal havuzunu temizle (Bellek sızıntısını önler)
             TenantContext.clear();
         }
     }
