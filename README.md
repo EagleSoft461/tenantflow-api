@@ -1,13 +1,21 @@
-[![GitHub Release](https://img.shields.io/badge/Release-v0.2.0-green.svg)](https://github.com/your-github-username/tenantflow-api/releases)
-[![Java Version](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.2-brightgreen.svg)](https://spring.io/projects/spring-boot)
-[![Docker](https://img.shields.io/badge/Docker-Containerized-blue.svg)](https://www.docker.com/)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/EagleSoft461/tenantflow-api/main/assets/logo.png" alt="TenantFlow Logo" width="160">
+</p>
 
-# TenantFlow - Distributed Multi-Tenant B2B SaaS Infrastructure
+<h1 align="center">TenantFlow</h1>
 
-TenantFlow is an enterprise-grade, high-performance **B2B SaaS (Software as a Service)** backend infrastructure designed around a **Single-Database, Discriminator-Based (Shared Schema)** multi-tenancy model.
+<p align="center">
+  <strong>Production-Ready, Enterprise-Grade Multi-Tenant SaaS Backend Infrastructure</strong><br>
+  Built with Spring Boot 3, Spring Security 6, and Hibernate 6.6.5.
+</p>
 
-The architecture guarantees strict, thread-safe logical data isolation, decentralized token-driven tenant identification, and automated query scoping to mitigate cross-tenant data leaks or horizontal privilege escalation.
+<p align="center">
+  <a href="https://github.com/EagleSoft461/tenantflow-api/releases"><img src="https://img.shields.io/badge/Release-v0.6.0-blue.svg" alt="GitHub Release"></a>
+  <a href="https://www.oracle.com/java/"><img src="https://img.shields.io/badge/Java-17-orange.svg" alt="Java Version"></a>
+  <a href="https://spring.io/projects/spring-boot"><img src="https://img.shields.io/badge/Spring%20Boot-3.4.2-brightgreen.svg" alt="Spring Boot"></a>
+  <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/Docker-Containerized-blue.svg" alt="Docker"></a>
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
+</p>
 
 ---
 
