@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/EagleSoft461/tenantflow-api/main/assets/logo.png" alt="TenantFlow Logo" width="160">
+  <img src="https://raw.githubusercontent.com/EagleSoft461/tenantflow-api/main/assets/Logo.png" alt="TenantFlow Logo" width="160">
 </p>
 
 <h1 align="center">TenantFlow</h1>
