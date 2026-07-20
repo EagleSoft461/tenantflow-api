@@ -2,11 +2,10 @@ package org.example.config;
 
 import org.example.context.TenantContext;
 import org.example.service.JwtService;
-import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -14,18 +13,17 @@ import org.springframework.web.servlet.HandlerInterceptor;
 public class TenantInterceptor implements HandlerInterceptor {
 
     @Autowired
-    private EntityManager entityManager;
-
-    @Autowired
-    private JwtService jwtService; // Token'ı çözmek için JwtService enjekte edildi
+    private JwtService jwtService; // Token'ı güvenli şekilde çözmek için kalıyor
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(@NonNull HttpServletRequest request,
+                             @NonNull HttpServletResponse response,
+                             @NonNull Object handler) throws Exception {
 
         String authHeader = request.getHeader("Authorization");
         String tenantId = null;
 
-        // Eğer istekte mühürlü bir Bearer Token varsa direkt onun içinden oku (En Güvenli Yol!)
+        // 1. JWT Token varsa kiracı kimliğini güvenli kaynaktan alıyoruz
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             try {
@@ -35,28 +33,31 @@ public class TenantInterceptor implements HandlerInterceptor {
             }
         }
 
-        // Eğer token yoksa (register/login gibi halka açık yerler için) manuel header'a bakmaya devam etsin
+        // 2. Token yoksa (Register/Login gibi) header kontrolü devrede
         if (tenantId == null || tenantId.trim().isEmpty()) {
             tenantId = request.getHeader("X-Tenant-ID");
         }
 
-        // Elimizde geçerli bir kiracı bilgisi varsa, veritabanına mühür bas!
+        // v0.7.0 Dynamic Schema Routing:
+        // Eski satır bazlı filtreleme kodlarını (Session, enableFilter) tamamen sildik!
+        // Sadece Context'e kiracı adını veriyoruz. Yazdığın Resolver ve Provider bu ismi
+        // yakalayıp veritabanında "SET search_path TO schema_..." komutunu yürütecek.
         if (tenantId != null && !tenantId.trim().isEmpty()) {
-            TenantContext.setCurrentTenant(tenantId);
-
-            // Hibernate'e sızıp o anki SQL sorgularına gizlice "WHERE tenant_id = ..." ekletiyoruz
-            Session session = entityManager.unwrap(Session.class);
-            session.enableFilter("tenantFilter").setParameter("tenantId", tenantId);
+            // Şema isimlendirmene göre burayı "schema_" + tenantId yapabilirsin
+            TenantContext.setCurrentTenant("schema_" + tenantId);
         } else {
-            System.out.println("Warning: Secure Tenant context could not be established for URI: " + request.getRequestURI());
+            TenantContext.setCurrentTenant("public");
         }
 
         return true;
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-        // İstek bittiği an ThreadLocal hafızasını boşaltıp bellek sızıntılarını (Memory Leak) önlüyoruz
+    public void afterCompletion(@NonNull HttpServletRequest request,
+                                @NonNull HttpServletResponse response,
+                                @NonNull Object handler,
+                                Exception ex) throws Exception {
+        // İstek bittiği an bellek sızıntısını önlemek için ThreadLocal'i temizliyoruz
         TenantContext.clear();
     }
 }

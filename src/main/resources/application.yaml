@@ -16,6 +16,8 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        tenant_identifier_resolver: org.example.config.multitenancy.TenantIdentifierResolver
+        multi_tenant_connection_provider: org.example.config.multitenancy.TenantConnectionProvider
 
 server:
   port: 8081

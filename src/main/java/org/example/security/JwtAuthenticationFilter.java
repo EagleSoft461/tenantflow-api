@@ -50,16 +50,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     // 1. Kiracı ID'sini bağlama yerleştir
                     String tenantId = jwtService.extractTenantId(jwt);
                     TenantContext.setCurrentTenant(tenantId);
-
-                    // 2. DOĞRUDAN CLAIMS ÜZERİNDEN ROL ÇEKME (JwtService'e bağımlılığı bitirdik):
                     String role = null;
+
                     try {
-                        // Token'ın imzasını doğrulamayı zaten JwtService yaptığı için
-                        // buradaki şifreli gövdeden (payload) "role" claim'ini cımbızla çekiyoruz.
                         String[] chunks = jwt.split("\\.");
                         if (chunks.length > 1) {
                             String payload = new String(java.util.Base64.getUrlDecoder().decode(chunks[1]));
-                            // Basit bir JSON string temizleme ile "role":"..." değerini yakalayalım
                             if (payload.contains("\"role\":\"")) {
                                 role = payload.split("\"role\":\"")[1].split("\"")[0];
                             }
