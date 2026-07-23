@@ -19,5 +19,8 @@ spring:
         tenant_identifier_resolver: org.example.config.multitenancy.TenantIdentifierResolver
         multi_tenant_connection_provider: org.example.config.multitenancy.TenantConnectionProvider
 
+  flyway:
+    enabled: false
+
 server:
   port: 8081

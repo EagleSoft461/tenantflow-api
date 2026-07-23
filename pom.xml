@@ -89,6 +89,18 @@
                 <version>2.6.0</version>
             </dependency>
 
+            <!-- Flyway Core Engine -->
+            <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-core</artifactId>
+            </dependency>
+
+            <!-- Flyway PostgreSQL Extension -->
+            <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-database-postgresql</artifactId>
+            </dependency>
+
         </dependencies> <build>
         <plugins>
             <plugin>

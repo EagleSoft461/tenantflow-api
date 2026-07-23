@@ -73,4 +73,14 @@ public class JwtService {
                 .parseSignedClaims(token)
                 .getPayload();
     }
+
+    public String extractRole(String token) {
+        Claims claims = extractAllClaims(token);
+        // Rolün "role" veya "roles" adıyla kaydedilmiş olma ihtimaline karşı güvenli çekiyoruz
+        Object roleObj = claims.get("role");
+        if (roleObj == null) {
+            roleObj = claims.get("roles");
+        }
+        return roleObj != null ? roleObj.toString() : null;
+    }
 }
