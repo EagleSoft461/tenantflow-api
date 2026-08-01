@@ -2,6 +2,7 @@ package org.example;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.entity.User;
+import org.example.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,9 +29,13 @@ public class MultiTenantIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @BeforeEach
     void setUp() {
-        // Test öncesi hazırlıklar (Gerekirse mock veriler veya temizlik)
+        // Test öncesi hazırlıklar (Önceki testlerden kalan verileri temizleyelim)
+        userRepository.deleteAll();
     }
 
     @Test
@@ -38,7 +43,7 @@ public class MultiTenantIntegrationTest {
     @WithMockUser(username = "testAdmin", roles = {"ADMIN"})
     void shouldCreateUserInSpecificTenantSchema() throws Exception {
 
-        User newUser = new User();
+        org.example.dto.UserRegistrationRequestDTO newUser = new org.example.dto.UserRegistrationRequestDTO();
         newUser.setEmail("test.alpha@tenantflow.com");
         newUser.setPassword("SecurePassword123!");
         newUser.setFirstName("Alpha");

@@ -3,15 +3,15 @@ spring:
     name: tenantflow-api
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/tenantflow
-    username: postgres
-    password: password
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/tenantflow}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: ${DDL_AUTO:update}
+    show-sql: ${SHOW_SQL:true}
     properties:
       hibernate:
         format_sql: true
@@ -23,4 +23,10 @@ spring:
     enabled: false
 
 server:
-  port: 8081
+  port: ${SERVER_PORT:8081}
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET_KEY:bu-bizim-cok-gizli-ve-guvenli-jwt-anahtarimiz-1234567890}
+  expiration: ${JWT_EXPIRATION:900000} # 15 minutes in milliseconds
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7 days in milliseconds

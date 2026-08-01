@@ -5,6 +5,7 @@ import org.example.dto.LoginRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -14,13 +15,13 @@ public class AuthController {
     private org.example.service.AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody org.example.entity.User user) {
-        return ResponseEntity.ok(authService.register(user));
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody org.example.dto.UserRegistrationRequestDTO requestDTO) {
+        return ResponseEntity.ok(authService.register(requestDTO));
     }
 
     @ExceptionHandler(RuntimeException.class)

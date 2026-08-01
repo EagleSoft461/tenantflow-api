@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 public class TenantInterceptor implements HandlerInterceptor {
 
@@ -29,7 +31,7 @@ public class TenantInterceptor implements HandlerInterceptor {
             try {
                 tenantId = jwtService.extractTenantId(token);
             } catch (Exception e) {
-                System.out.println("Error parsing JWT token for tenant isolation: " + e.getMessage());
+                log.error("Error parsing JWT token for tenant isolation: {}", e.getMessage());
             }
         }
 

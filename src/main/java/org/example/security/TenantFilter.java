@@ -2,9 +2,12 @@ package org.example.security;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
+import org.example.context.TenantContext;
 import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 
+@Slf4j
 @Component
 public class TenantFilter implements Filter {
 
@@ -22,7 +25,7 @@ public class TenantFilter implements Filter {
             TenantContext.setCurrentTenant(tenantId);
         } else {
             // Şimdilik test süreçlerini baltalamamak için log basalım, fırlatmayalım
-            System.out.println("Warning: X-Tenant-ID header not found in request: " + httpRequest.getRequestURI());
+            log.warn("Warning: X-Tenant-ID header not found in request: {}", httpRequest.getRequestURI());
         }
 
         try {

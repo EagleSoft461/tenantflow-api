@@ -4,6 +4,9 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.example.entity.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -16,7 +19,16 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    private final String SECRET_KEY = "bu-bizim-cok-gizli-ve-guvenli-jwt-anahtarimiz-1234567890";
+    private static final Logger log = LoggerFactory.getLogger(JwtService.class);
+
+    @Value("${jwt.secret}")
+    private String SECRET_KEY;
+
+    @Value("${jwt.expiration}")
+    private long jwtExpiration;
+
+    @Value("${jwt.refresh-expiration}")
+    private long refreshExpiration;
 
     // 2. Metot adını ve içindeki değişken uyuşmazlığını (keyBytes) düzelttik
     private SecretKey getSigningKey() {
@@ -24,20 +36,26 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // Kullanıcı giriş yaptığında ona özel 24 saatlik token üretir
+    // Kullanıcı giriş yaptığında ona özel token üretir
     public String generateToken(User user) {
         Map<String, Object> extraClaims = new HashMap<>();
         // En kritik yer: Kiracı (Tenant) bilgisini token payload'una gömüyoruz!
         extraClaims.put("tenantId", user.getTenantId());
         extraClaims.put("role", user.getRole());
+        extraClaims.put("userId", user.getId());
 
-        return Jwts.builder()
+        long currentTime = System.currentTimeMillis();
+        String token = Jwts.builder()
                 .claims(extraClaims)
                 .subject(user.getEmail())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24 Saatlik Ömür
+                .issuedAt(new Date(currentTime))
+                .expiration(new Date(currentTime + jwtExpiration))
                 .signWith(getSigningKey())
                 .compact();
+
+        log.info("JWT token generated for user: {} with expiration: {} minutes", 
+                 user.getEmail(), jwtExpiration / 60000);
+        return token;
     }
 
     // Token'ın içinden email bilgisini söker
